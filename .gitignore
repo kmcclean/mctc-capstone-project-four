@@ -118,3 +118,8 @@ com_crashlytics_export_strings.xml
 *.pot
 *.pyc
 local_settings.py
+
+###Miscellaneous Project Files###
+open_secrets/core/keys.txt
+open_secrets/core/candidate_data.txt
+open_secrets/core/open_secrets_info
