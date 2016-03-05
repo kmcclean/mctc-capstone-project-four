@@ -35,8 +35,10 @@ class DBViewer:
         api_key = self.get_key("Open_Secrets_API_KEY_2")
         results_list = []
         for item in search_results:
+
             url = "http://www.opensecrets.org/api/?method=candContrib&cid=" + item[0] + "&cycle=2016&apikey=" + api_key +  "&output=json"
-            open_secrets_results = request.urlopen(url)
+            r = request.Request(url, data=None, headers={'User-Agent': 'Mozilla/5.0'})
+            open_secrets_results = request.urlopen(r).read().decode('utf-8')
             results_list.append(open_secrets_results)
 
         return results_list
@@ -45,13 +47,39 @@ class DBViewer:
     def output_open_secrets_results(self, results):
 
         try:
+
             for candidate in results:
-                jsonInfo = json.loads(candidate.readall().decode('utf-8'))
+                candidate_info = []
+                jsonInfo = json.loads(candidate)
+
+                #this section gets the candidate's name and which cycle the information is from.
                 json_level_one = jsonInfo["response"]
                 json_level_two = json_level_one["contributors"]
-                json_level_three = json_level_two["@attributes"]
-                for item in json_level_three:
-                    print(item)
+                json_level_three_one = json_level_two["@attributes"]
+                candidate_info.append(json_level_three_one.get("cand_name"))
+                candidate_info.append(json_level_three_one.get('cycle'))
+
+                json_level_three_two = json_level_two["contributor"]
+
+                for contributor in json_level_three_two:
+                    json_level_four = contributor["@attributes"]
+                    candidate_info.append(json_level_four.get("org_name"))
+                    candidate_info.append(json_level_four.get("total"))
+
+                counter = 0
+                while counter < len(candidate_info):
+                    if counter == 0:
+                        print("Candidate Name: " + candidate_info[counter])
+                    elif counter == 1:
+                        print("Cycle: " + candidate_info[counter])
+                        print("")
+                    elif counter % 2 == 0:
+                        print("Organization: " + candidate_info[counter])
+                    else:
+                        print("Contribution: " + candidate_info[counter])
+                        print("")
+                    counter += 1
+
 
         except Exception as e:
             print("Error in output_open_secrets_results: " + e)
