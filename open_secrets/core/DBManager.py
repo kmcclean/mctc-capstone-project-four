@@ -1,5 +1,6 @@
 import sqlite3
 
+
 class DBManager:
 
     def __init__(self):
@@ -53,6 +54,7 @@ class DBManager:
         except Exception as e:
             print("Error in print_out_data method: " + e)
 
+    # this searches the database for candidates whose names match the search given.
     def candidate_search(self, search_name):
         try:
             search_name_adjusted = "%" + search_name + "%"
