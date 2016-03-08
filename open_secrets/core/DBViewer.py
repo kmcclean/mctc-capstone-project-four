@@ -29,6 +29,35 @@ class DBViewer:
                 key = key.strip()
                 return key
 
+        # this takes the search term and turns it into something that can be used by websites.
+    def search_term_converter(self, search_term, new_phrase):
+        new_term = search_term.replace(" ", new_phrase)
+        return new_term
+
+    def get_npr(self, search_list):
+        try:
+            npr_key = self.get_key("NPR_API_KEY")
+            for term in search_list:
+                new_term = self.search_term_converter(term, "%20")
+                url = "http://api.npr.org/query?id=1014&fields=title,relatedLink&searchTerm=" + new_term + "&dateType=story&output=JSON&apiKey=" + npr_key
+                npr_stories = request.urlopen(url).read().decode('utf-8')
+                npr_json = json.loads(npr_stories)
+
+                npr_json_level_one = npr_json["list"]
+                npr_json_level_two = npr_json_level_one["story"]
+                for story in npr_json_level_two:
+
+                    npr_json_level_three= story["title"]
+                    print(npr_json_level_three.get("$text"))
+
+                    npr_json_level_four = story["link"]
+                    npr_json_level_five = npr_json_level_four[0]
+                    npr_json_level_six = npr_json_level_five["$text"]
+                    print(npr_json_level_six)
+
+        except Exception as e:
+            print("Error in get_npr: " + e)
+
     #this tries to get the open secrets json files for the candidates that have been selected.
     def get_open_secrets(self):
         search_results = self.search()
@@ -41,6 +70,8 @@ class DBViewer:
             open_secrets_results = request.urlopen(r).read().decode('utf-8')
             results_list.append(open_secrets_results)
 
+
+
         return results_list
 
     #This taks the information from open_secrets and parases the json information for the correct data.
@@ -50,6 +81,7 @@ class DBViewer:
 
             for candidate in results:
                 candidate_info = []
+                org_names_list = []
                 jsonInfo = json.loads(candidate)
 
                 #this section gets the candidate's name and which cycle the information is from.
@@ -65,6 +97,7 @@ class DBViewer:
                     json_level_four = contributor["@attributes"]
                     candidate_info.append(json_level_four.get("org_name"))
                     candidate_info.append(json_level_four.get("total"))
+                    org_names_list.append(json_level_four.get("org_name"))
 
                 counter = 0
                 while counter < len(candidate_info):
@@ -80,6 +113,8 @@ class DBViewer:
                         print("")
                     counter += 1
 
+                return org_names_list
+
 
         except Exception as e:
             print("Error in output_open_secrets_results: " + e)
@@ -87,5 +122,6 @@ class DBViewer:
 
 view = DBViewer()
 top_results = view.get_open_secrets()
-view.output_open_secrets_results(top_results)
+org_results = view.output_open_secrets_results(top_results)
+view.get_npr(org_results)
 view.close()
