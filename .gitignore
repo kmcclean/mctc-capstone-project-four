@@ -123,3 +123,4 @@ local_settings.py
 open_secrets/core/keys.txt
 open_secrets/core/candidate_data.txt
 open_secrets/core/open_secrets_info
+open_secrets/third_party_lib
